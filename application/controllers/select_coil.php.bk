@@ -1,0 +1,323 @@
+<?php
+
+class Select_coil extends Controller {
+
+	private static $PERMISSION = "SELECT_COIL";
+
+
+	function __construct()
+	{
+		parent::Controller();
+
+		check_permission(self::$PERMISSION);
+
+		$this->load->model('order_model');
+		$this->load->model('coil_model');
+		$this->load->model('slit_model');
+		$this->load->model('film_model');
+		$this->load->model('config_model');
+		$this->load->model('product_model');
+		$this->load->model("coil_film_product_model", "cfp_model");
+		$this->load->model("product_produce_model", "pp_model");
+		$this->load->model("next_product_model", "np_model");
+
+	}
+
+	function index()
+	{
+		$search = $this->input->post("search");
+		$search_type = $this->input->post("search_type");
+		
+		if (isset($search_type)) {
+			if ("asc" == $search_type) {
+				$search_type = "desc";
+			} else {
+				$search_type = "asc";
+			}
+		}
+
+		if (empty($search)) $search = "coil_lot_no";
+		if (empty($search_type)) $search_type = "asc";
+
+		$data['search'] = $search;
+		// Reverse the search type
+		$data['search_type'] = $search_type;
+		
+
+		$selected_coil_list = self::_get_selected_coil();
+
+		$data['selected_coil'] = $selected_coil_list;
+
+		$po_id = strtoupper($this->input->post("po_id"));
+		$data['po_id'] = $po_id;
+
+		if (!empty($po_id)) {
+			$data['coil_result'] = $this->coil_model->get_all_by_id_normal_status($po_id, $search, $search_type);
+		} else {
+			$data['coil_result'] = array();
+		}
+
+		$this->template->write_view('content', "selected_coil_list_view" , $data);
+		$this->template->render();
+	}
+
+	function selected_slit()
+	{
+		$po_id = strtoupper($this->input->post("po_id"));
+
+		$data['po_id'] = $po_id;
+
+		$selected_coil_list = self::_get_selected_coil();
+
+		$po_id_list= array();
+		for($i = 0; $i < count($selected_coil_list) ; $i++) {
+			array_push($po_id_list, $selected_coil_list[$i]['po_id']);
+		}
+		$po_id_list = array_unique($po_id_list);
+		$data['po_id_list'] = $po_id_list;
+
+		$total_weight = 0;
+		for($i = 0; $i < count($selected_coil_list); $i++) {
+			$total_weight += $selected_coil_list[$i]['weight'];
+		}
+
+		$data['total_weight'] = $total_weight;
+
+		$data['selected_coil'] = $selected_coil_list;
+		$this->template->write_view('content', "selected_coil_selected_view" , $data);
+		$this->template->render();
+
+	}
+
+
+	function slit()
+	{
+		$selected_coil_list = self::_get_selected_coil();
+
+		$po_id_now = $selected_coil_list[0]['po_id'];
+
+		$po_id_next = $this->np_model->get_next_name($po_id_now);
+		$group_code = $po_id_next;
+
+		$slit_spec_id = $this->input->post("slit_spec_id");
+		if (!isset($slit_spec_id)) {
+			$slit_spec_id = "";
+		}
+		$data["slit_spec_id"] = $slit_spec_id;
+		
+		$width = $this->input->post("width");
+		if (!isset($width) || empty($width) || $width <= 0) {
+			$width = 1228;
+		}
+		$data['width'] = $width;
+
+		// Increment Group code
+		$temp = substr($group_code, -2);
+		$temp++;
+		$group_code_next = substr($group_code, 0, count($group_code) -2) . $temp;
+
+		$data['slit_spec_result'] = $this->slit_model->get_by_thickness($selected_coil_list[0]['thickness']);
+
+		$product_list = $this->product_model->get_all();
+		$product = array();
+		for($i = 0; $i < count($product_list); $i++)
+		{
+			$product[$product_list[$i]->product_dtl_id] = $product_list[$i]->product_name_en;
+		}
+		$data['product_result'] = $product;
+
+		// Get for wage
+		$slit_spec_result = $this->slit_model->get_by_id($slit_spec_id);
+		$wage_product_list = array();
+		$wage_price_list = array();
+		if ($slit_spec_result !== FALSE) {
+			for($i = 0; $i < count($slit_spec_result); $i++) {
+				$wage_product_list[] = $slit_spec_result[$i]['product_dtl_id'];
+			}
+		}
+		$data['slit_spec_selected'] = $slit_spec_result;
+		
+		$wage_product_list = array_unique($wage_product_list);
+		for($i = 0; $i< count($wage_product_list); $i++) {
+			$wage_price_list[$wage_product_list[$i]] = $this->product_model->get_wage_by_product_id($wage_product_list[$i]);
+		}
+		$data['wage_product'] = $wage_product_list;
+		$data['wage_price'] = $wage_price_list;
+
+		$data['group_code'] = $group_code_next;
+		$data['selected_coil'] = $selected_coil_list;
+		$this->template->write_view('content', "selected_coil_name_select_view" , $data);
+		$this->template->render();
+
+	}
+
+	function slit_method()
+	{
+		$group_code = $this->input->post("group_code");
+		$slit_spec_id = $this->input->post("slit_spec_id");
+		$selected_coil_list = self::_get_selected_coil();
+		$width = $this->input->post("width");
+	
+		$this->db->trans_begin();
+		
+		$error_flag = FALSE;
+		$error_message = "";
+
+		// Record Change
+		$record_change_by = $this->session->userdata("USERNAME");
+		$record_change_date = date_to_mysqldatetime();
+
+		$slit_spec_mapping= array();
+		$group_weight_mapping = array();
+		$slit_spec_result = $this->slit_model->get_by_id($slit_spec_id);
+		for($i = 0; $i < count($slit_spec_result); $i++)
+		{
+			$slit_sub_no = $slit_spec_result[$i]['slit_sub_no'];
+			$slit_qty = $slit_spec_result[$i]['slit_qty'];
+			$product_dtl_id = $slit_spec_result[$i]['product_dtl_id'];
+			$slit_width = $slit_spec_result[$i]['slit_width'];
+			$slit_date = date_to_mysqldatetime();
+
+			$cost_price = 0;
+		
+			$total_weight = 0;
+			for($j = 0; $j < count($selected_coil_list); $j++)
+			{
+				// Insert into Film Information
+				$film_id = utime();
+				$thickness = $selected_coil_list[$j]['thickness'];
+				$coil_lot_no = $selected_coil_list[$j]['coil_lot_no'];
+				$po_id = $selected_coil_list[$j]['po_id'];
+
+				if ($width)
+				{
+					$film_status = '1'; // Normal Film Status
+					
+					// Calculate Film weight
+					$film_weight =  round((($slit_width * $slit_qty) / $width) * $selected_coil_list[$j]['weight'], 3);
+					$total_weight += $film_weight;
+
+					$order_price = $this->order_model->get_price_by_po_id($selected_coil_list[$j]['po_id']);
+					if ($order_price > 0) {
+						$film_price = $film_weight * $order_price;
+					
+						$cost_price += $film_price;
+
+						$populate_flag = 'N';
+						$populate_date = "";
+
+						$this->film_model->insert(	"ADD", $film_id, $thickness, $slit_width, $film_weight, $slit_qty, $film_status, $slit_date, $populate_flag, $populate_date,
+									$product_dtl_id, $film_price, $record_change_by, $record_change_date);
+
+						// Insert into Product Coil Film Mapping
+						$coil_id = $selected_coil_list[$j]['coil_id'];
+
+						$this->cfp_model->insert("ADD", $coil_id, $coil_lot_no, $film_id, $slit_spec_id, $slit_sub_no, $group_code, $record_change_by, $record_change_date);
+
+						//Set Coil status to 2 (Slitted)
+						$this->coil_model->update_status($coil_id, $coil_lot_no, $po_id, '2');
+
+						usleep(1000);
+					} else {
+						$error_flag = TRUE;
+						$error_message = "ค่าราคาต้นทุนต่อกิโลกรัมของ Order มีค่าไม่ถูกต้อง กรุณาตรวจสอบ Order [PO ID : " . $po_id . "]";
+						break;
+					} // order price
+				}
+				else
+				{
+					$error_flag = TRUE;
+					$error_message = "ค่าความกว้างของ Order มีค่าไม่ถูกต้อง กรุณาตรวจสอบ Order [PO ID : " . $po_id . "]";
+					break;
+				} // order width
+				
+				if ($error_flag == TRUE) 
+				{
+					break;
+				}
+			}
+			$slit_spec_mapping[$slit_spec_id . $slit_sub_no . $product_dtl_id] = $cost_price;
+			$group_weight_mapping[$slit_spec_id . $slit_sub_no . $product_dtl_id] = $total_weight;
+						
+		}
+		if ($error_flag == TRUE)
+		{
+			$data['result'] = $error_message;
+			$this->db->trans_rollback();
+			$data['back_page'] = "/select_coil";
+			$this->template->write_view('content', 'order_result_view', $data);
+			$this->template->render();
+			return;
+		}
+
+
+		//Insert into Product Produce
+		$machine_by = "";
+		for($i = 0; $i < count($slit_spec_result); $i++)
+		{
+			$slit_sub_no = $slit_spec_result[$i]['slit_sub_no'];
+			$product_dtl_id = $slit_spec_result[$i]['product_dtl_id'];
+
+			$cost_price = $slit_spec_mapping[$slit_spec_id . $slit_sub_no . $product_dtl_id];
+			$total_weight = $group_weight_mapping[$slit_spec_id . $slit_sub_no . $product_dtl_id];
+			
+			$program_code = $this->input->post("program" . $product_dtl_id);
+			$wage = $this->input->post("wage". $product_dtl_id);
+
+			$this->pp_model->insert("ADD", $group_code, $machine_by, $cost_price, $slit_spec_id, $slit_sub_no, $product_dtl_id, $program_code, $total_weight, $wage, $record_change_by, $record_change_date);
+		}
+
+		if ($this->db->trans_status() === FALSE)
+		{
+			$data['result'] = 'ไม่สามารถเปลี่ยนแปลงได้ เพราะเกิดปัญหาบางอย่าง<br/>Error Number : ' . $this->db->_error_number() . "<br/>" .$this->db->_error_message();
+			$this->db->trans_rollback();
+			$data['back_page'] = "/select_coil";
+			$this->template->write_view('content', 'order_result_view', $data);
+			$this->template->render();
+		}
+		else
+		{
+			$this->db->trans_commit();
+			$data['result'] = "ทำการ Slit เรียบร้อยแล้ว ชื่อกลุ่ม คือ " . $group_code;
+			$data['back_page'] = "/select_coil";
+			$this->template->write_view('content', 'order_result_view', $data);
+			$this->template->render();
+		}
+	}
+
+	function _get_selected_coil()
+	{
+
+		// Check
+		$row_num = $this->input->post("row_num");
+		$selected_coil_list = array();
+
+		if (!isset($row_num) || empty($row_num)) {
+			$row_num = 0;
+		}
+
+
+		for($i = 0; $i <= $row_num; $i++)
+		{
+			$coil_id = $this->input->post("select_coil_id". $i);
+			$coil_lot_no = $this->input->post("select_coil_lot_no" . $i);
+			$po_id = $this->input->post("select_po_id" . $i);
+			if (isset($coil_id) && !empty($coil_id))
+			{
+				$result = $this->coil_model->get_by_id($coil_id, $coil_lot_no, $po_id);
+				if ($result)
+				{
+					if (!in_array($result, $selected_coil_list)) {
+						array_push($selected_coil_list, $result);
+					}
+				}
+			}
+		}
+
+		return $selected_coil_list;
+	}
+
+}
+
+/* End of file coil.php */
+/* Location: ./system/application/controllers/coil.php */

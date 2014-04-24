@@ -1,0 +1,2 @@
+<br />
+<b>Fatal error</b>:  Allowed memory size of 25165824 bytes exhausted (tried to allocate 14733452 bytes) in <b>C:\AppServ\www\phpMyAdmin\libraries\zip.lib.php</b> on line <b>112</b><br />
