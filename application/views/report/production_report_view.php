@@ -60,6 +60,7 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 			<th align="center" id="inventory">Inventory</th>
 			<th align="center" id="delivery">Delivery</th>
 			<th align="center" id="backlog">Backlog</th>
+			<th align="center" id="backlog">Inventory_left</th>
 			<th align="center" id="stock">Stock</th>
 			<th align="center" id="stockunit" nowrap="nowrap">Stock Unit</th>
 			<th align="center" id="inproduction" nowrap="nowrap">In Production</th>
@@ -89,6 +90,7 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 			<td><?= check_negative($item["delivery"] + $item["backlog"]) ?></td>
 			<td><?= check_negative($item["delivery"]) ?></td>
 			<td><?= check_negative($item["backlog"]) ?></td>
+			<td><?= check_negative($item["stock_left"]) ?></td>
 			<td><input type="text" name="stock_<?= $item["product_dtl_id"] ?>" class="stock numeric" value="0" size="4" rel="<?= $item["truck_size"] ?>" rev="<?= $item["product_dtl_id"] ?>" /></td>
 			<td id="<?= $item["product_dtl_id"] ?>">0</td>
 			<td id="inproduction<?= $item["product_dtl_id"] ?>" rel="<?= $item["in_production"] ?>">
@@ -391,4 +393,4 @@ function onAddMore(obj) {
 		dateFormat : "dd/mm/yy"
 	});
 }
-</script>
+</script>                                                                                                                                                                                                                                                                                                                                                                                                         
