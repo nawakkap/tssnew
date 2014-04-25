@@ -22,8 +22,9 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 #inventory { width: 20px; }
 #delivery { width: 25px; }
 #backlog { width: 25px; }
+#invleft { width: 100px; }
 #stock { width: 15px;}
-#stockunit { width: 20px;}
+#stockunit { width: 5px;}
 #inproduction { width: 20px;}
 #totalkgneed { width: 25px;}
 #percentfilm { width: 25px;}
@@ -55,12 +56,12 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 		<tr class="ui-widget-header">
 			<th align="center" id="no">No</th>
 			<th align="center" id="productname">Production Name</th>
-			<th align="center" id="detailsize">Detail Size</th>
+			<!-- <th align="center" id="detailsize">Detail Size</th> -->
 			<th align="center" id="trucksize">Truck Size</th>
 			<th align="center" id="inventory">Inventory</th>
 			<th align="center" id="delivery">Delivery</th>
 			<th align="center" id="backlog">Backlog</th>
-			<th align="center" id="backlog">Inventory_left</th>
+			<th align="center" id="invleft" nowrap="nowrap">Inventory_left</th>
 			<th align="center" id="stock">Stock</th>
 			<th align="center" id="stockunit" nowrap="nowrap">Stock Unit</th>
 			<th align="center" id="inproduction" nowrap="nowrap">In Production</th>
@@ -85,12 +86,12 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 		<tr class="<?= ($i % 2) ? "odd" : "even" ?> datarow">
 			<td><?= ($i + 1) ?></td>
 			<td nowrap="nowrap" class="product_name" rel="<?= $item["product_display_id"] ?>" style="cursor:pointer;"><?= $item["product_name_th"] ?></td>
-			<td nowrap="nowrap"><?= $item["detail_size"] ?></td>
+			<!-- <td nowrap="nowrap"><?= $item["detail_size"] ?></td>-->
 			<td><?= number_format($item["truck_size"], 0) ?></td>
 			<td><?= check_negative($item["delivery"] + $item["backlog"]) ?></td>
 			<td><?= check_negative($item["delivery"]) ?></td>
 			<td><?= check_negative($item["backlog"]) ?></td>
-			<td><?= check_negative($item["stock_left"]) ?> + <?= number_format($item["stock_expect"], 0) ?></td>
+			<td align="left" nowrap="nowrap"><?= check_negative($item["stock_left"]) ?> + <?= number_format($item["stock_expect"], 0) ?></td>
 			<td><input type="text" name="stock_<?= $item["product_dtl_id"] ?>" class="stock numeric" value="0" size="4" rel="<?= $item["truck_size"] ?>" rev="<?= $item["product_dtl_id"] ?>" /></td>
 			<td id="<?= $item["product_dtl_id"] ?>">0</td>
 			<td id="inproduction<?= $item["product_dtl_id"] ?>" rel="<?= $item["in_production"] ?>">
