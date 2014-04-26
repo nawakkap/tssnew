@@ -912,6 +912,40 @@ class Report extends CI_Controller {
 		$this->template->render();
 	}
 	
+	function delivery_report()
+	{
+		// Read Date
+		$sort_column = $this->input->post("sort_column");
+		$sort_by = $this->input->post("sort_by");
+		
+		if (empty($sort_column)) {
+			$sort_column = "custname";
+		}
+		if (empty($sort_by)) {
+			$sort_by = "desc";
+		}
+	
+		$report_result = $this->report_model->get_vr_delivery($sort_column, $sort_by);
+		$data["report_result"] = $report_result;
+		$data["sort_column"] = $sort_column;
+		$data["sort_by"] = ("asc" == $sort_by) ? "desc" : "asc";
+	
+		$username = $this->session->userdata("USERNAME");
+		user_log_message("INFO",  $username . " print report to view");
+		
+		$selected = "Delivery report";
+		$navigator = array(
+			"หน้าแรก" => "/main",
+			"Report" => "/report",
+			$selected => "",
+		);
+		
+		$data["navigation"] = build_navigation($selected, $navigator);
+				
+		$this->template->write_view('content', 'report/delivery_report_view', $data);
+		$this->template->render();
+	}
+	
 	function slit_report_by_date()
 	{
 		// Read Date
@@ -1376,6 +1410,7 @@ class Report extends CI_Controller {
 		$priority = $this->input->post("priority");
 		$item = $this->input->post("item");
 		$ranking = $this->input->post("ranking");
+		$user = $this->input->post("user");
 	
 		
 		$this->load->model("report_model");
@@ -1390,7 +1425,7 @@ class Report extends CI_Controller {
 				//echo "sono = " . $sono[$i] . ", ";
 				//echo "item = " . $item[$i] . ", ";
 				//echo "ranking = " . $ranking[$i];
-				$this->report_model->add_delivery($sono[$i], $product_dtl_id[$i], $thedate, $item[$i], $priority[$i], $ranking[$i]);
+				$this->report_model->add_delivery($sono[$i], $product_dtl_id[$i], $thedate, $item[$i], $priority[$i], $ranking[$i], $user[$i]);
 			}
 		}
 		
@@ -1441,6 +1476,7 @@ class Report extends CI_Controller {
 				echo ' 			<th nowrap="nowrap">Item</th>';
 				echo ' 			<th nowrap="nowrap">Delivery Date</th>';
 				echo ' 			<th nowrap="nowrap">Priority</th>';
+				echo ' 			<th nowrap="nowrap">User</th>';
 				echo '			<th nowrap="nowrap">&nbsp;</th>';
 				echo '		</tr>';
 				echo '	</thead>';
@@ -1472,6 +1508,7 @@ class Report extends CI_Controller {
 					echo '			<td align="center">';
 					echo 			form_dropdown("priority[]", $option, $result[$i]["priority"], 'class="priority"');
 					echo '			</td>';
+					echo ' 			<td align="center"><input type="text" size="10" name="user[]" class="user" value="' . $result[$i]["user"] . '" /></td>';
 					echo ' 			<td><input type="button" value="Add" onclick="onAddMore(this)" /></td>';
 					echo '		</tr>';
 					

@@ -276,13 +276,33 @@ class Report_model extends CI_Model {
 		
 	}
 	
+	function get_vr_delivery($sort = 'custname', $sort_type = 'desc')
+	{
+		$this->db->order_by($sort, $sort_type);	
+		//$this->db->order_by('custname', 'desc');	
+		$query = $this->db->get("vr_rpt_delivery");
+		
+		//echo $this->db->last_query();
+		
+		db_log_message($this->db->last_query());
+		$result = array();
+		foreach($query->result_array() as $item)
+		{
+			$result[] = $item;
+		}
+		
+		return $result;	
+		
+	}
+	
 	public function get_xppdor_detail($sono, $ranking)
 	{
 		$sql = sprintf("SELECT 
 							imp_rpt_production_xppdor.*, 
 							imp_rpt_production_priority.item,
 							imp_rpt_production_priority.delivery_date, 
-							imp_rpt_production_priority.priority 
+							imp_rpt_production_priority.priority,
+							imp_rpt_production_priority.user 
 						FROM imp_rpt_production_xppdor LEFT JOIN imp_rpt_production_priority 
 						ON imp_rpt_production_xppdor.sono = imp_rpt_production_priority.sono 
 						WHERE imp_rpt_production_xppdor.sono = '%s' AND 
@@ -354,7 +374,7 @@ class Report_model extends CI_Model {
 		
 		$sql = "SELECT imp_rpt_production_xppdor.*, imp_rpt_production_priority.delivery_date, ";
 		$sql .= "imp_rpt_production_priority.priority, imp_rpt_production_priority.ranking, ";
-		$sql .= "imp_rpt_production_priority.item ";
+		$sql .= "imp_rpt_production_priority.item, imp_rpt_production_priority.user ";
 		$sql .= "FROM imp_rpt_production_xppdor LEFT JOIN imp_rpt_production_priority ON ";
 		$sql .= "imp_rpt_production_xppdor.sono = imp_rpt_production_priority.sono AND ";
 		$sql .= "imp_rpt_production_xppdor.product_dtl_id = imp_rpt_production_priority.product_dtl_id ";
@@ -375,7 +395,7 @@ class Report_model extends CI_Model {
 		return $result;
 	}
 	
-	public function add_delivery($sono, $product_dtl_id, $delivery_date, $item, $priority, $ranking = 1)
+	public function add_delivery($sono, $product_dtl_id, $delivery_date, $item, $priority, $ranking = 1, $user)
 	{
 		$where = array(
 			"sono" => $sono,
@@ -393,7 +413,8 @@ class Report_model extends CI_Model {
 				"item" => $item,
 				"delivery_date" => $delivery_date,
 				"priority" => $priority,
-				"ranking" => $ranking
+				"ranking" => $ranking,
+				"user" => $user
 			);
 			
 			$this->db->update("imp_rpt_production_priority", $data, $where);
@@ -408,7 +429,8 @@ class Report_model extends CI_Model {
 				"product_dtl_id" => $product_dtl_id,
 				"delivery_date" => $delivery_date,
 				"priority" => $priority,
-				"ranking" => $ranking
+				"ranking" => $ranking,
+				"user" => $user
 			);
 			
 			$this->db->insert("imp_rpt_production_priority", $data);
