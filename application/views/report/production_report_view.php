@@ -22,10 +22,10 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 #inventory { width: 20px; }
 #delivery { width: 25px; }
 #backlog { width: 25px; }
-#invleft { width: 100px; }
+#invleft { width: 25px; }
 #stock { width: 15px;}
 #stockunit { width: 5px;}
-#inproduction { width: 20px;}
+#inproduction { width: 100px;}
 #totalkgneed { width: 25px;}
 #percentfilm { width: 25px;}
 #totalcoilneed { width: 25px;}
@@ -61,7 +61,7 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 			<th align="center" id="inventory">Inventory</th>
 			<th align="center" id="delivery">Delivery</th>
 			<th align="center" id="backlog">Backlog</th>
-			<th align="center" id="invleft" nowrap="nowrap">Inventory_left</th>
+			<th align="center" id="invleft">Inveleft</th>
 			<th align="center" id="stock">Stock</th>
 			<th align="center" id="stockunit" nowrap="nowrap">Stock Unit</th>
 			<th align="center" id="inproduction" nowrap="nowrap">In Production</th>
@@ -91,14 +91,15 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 			<td><?= check_negative($item["delivery"] + $item["backlog"]) ?></td>
 			<td><?= check_negative($item["delivery"]) ?></td>
 			<td><?= check_negative($item["backlog"]) ?></td>
-			<td align="left" nowrap="nowrap"><?= check_negative($item["stock_left"]) ?> + <?= number_format($item["stock_expect"], 0) ?></td>
+			<td align="left"><?= check_negative($item["stock_left"]) ?></td>
 			<td><input type="text" name="stock_<?= $item["product_dtl_id"] ?>" class="stock numeric" value="0" size="4" rel="<?= $item["truck_size"] ?>" rev="<?= $item["product_dtl_id"] ?>" /></td>
 			<td id="<?= $item["product_dtl_id"] ?>">0</td>
-			<td id="inproduction<?= $item["product_dtl_id"] ?>" rel="<?= $item["in_production"] ?>">
+			<td id="inproduction<?= $item["product_dtl_id"] ?>" rel="<?= $item["in_production"] ?>" nowrap="nowrap">
 			<? if ($item["in_production"]) { ?>
 				<a href="<?= site_url("/program/program_detail/" . $this->convert->AsciiToHex($program_ext[$item["product_dtl_id"]]["program_code"]) . "/" . $this->convert->AsciiToHex($item['product_dtl_id']) . "/0") ?>" class="link"><?= number_format($item["in_production"], 0)?></a>
+				(<?= number_format($item["stock_expect"], 0) ?>)
 			<? } else { ?>
-				<?= number_format($item["in_production"], 0)?>
+				<?= number_format($item["in_production"], 0)?> (<?= number_format($item["stock_expect"], 0) ?>)
 			<? } ?>
 			</td>
 			<td id="backlog<?= $item["product_dtl_id"] ?>" rel="<?= $item["backlog"] ?>" rev="<?= $item["est_weight"] ?>">
