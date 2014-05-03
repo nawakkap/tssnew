@@ -295,7 +295,7 @@ class Report_model extends CI_Model {
 		
 	}
 	
-	public function get_xppdor_detail($sono, $ranking)
+	public function get_xppdor_detail($sono,$ranking, $productid)
 	{
 		$sql = sprintf("SELECT 
 							imp_rpt_production_xppdor.*, 
@@ -306,10 +306,12 @@ class Report_model extends CI_Model {
 						FROM imp_rpt_production_xppdor LEFT JOIN imp_rpt_production_priority 
 						ON imp_rpt_production_xppdor.sono = imp_rpt_production_priority.sono 
 						WHERE imp_rpt_production_xppdor.sono = '%s' AND 
-						imp_rpt_production_priority.ranking = '%s'  
+						imp_rpt_production_priority.ranking = '%s' AND
+						imp_rpt_production_xppdor.product_dtl_id = '%s'
 						ORDER BY priority ASC, delivery_date ASC",
 						mysql_real_escape_string($sono),
-						mysql_real_escape_string($ranking)
+						mysql_real_escape_string($ranking),
+						mysql_real_escape_string($productid)
 					);
 					
 		$query = $this->db->query($sql);
@@ -328,7 +330,7 @@ class Report_model extends CI_Model {
 	{
 			// $this->db->where("order_date between");
 		
-		$sql = sprintf("SELECT DISTINCT sono, delivery_date,ranking FROM imp_rpt_production_priority WHERE delivery_date between '%s' AND '%s'",
+		$sql = sprintf("SELECT DISTINCT sono, product_dtl_id, delivery_date, ranking FROM imp_rpt_production_priority WHERE item > 0 AND delivery_date between '%s' AND '%s'",
 						mysql_real_escape_string($start_date),
 						mysql_real_escape_string($end_date)
 					);

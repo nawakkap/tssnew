@@ -224,7 +224,7 @@ class Calendar extends CI_Controller
 			$rsd = rand($st, $et);
 			$red = rand(3600, 10800);
 			
-			$r = $this->report_model->get_xppdor_detail($result[$i]["sono"], $result[$i]["ranking"]);
+			$r = $this->report_model->get_xppdor_detail($result[$i]["sono"], $result[$i]["ranking"], $result[$i]["product_dtl_id"]);
 			$display  = "";
 			if ($r)
 			{
