@@ -280,7 +280,7 @@ class Film_model extends CI_Model {
 	{
 		$this->db->where("coil_group_code", $coil_group_code);
 		$this->db->where("product_dtl_id", $product_dtl_id);
-		$this->db->where("populate_flag", "N");
+		$this->db->where("program_code", $program_code);
 		$query = $this->db->get("vr_prd_film");
 		
 		db_log_message($this->db->last_query());
