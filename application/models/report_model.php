@@ -154,9 +154,9 @@ class Report_model extends CI_Model {
 	
 	function get_vr_finishgood_detail_report($sort = 'sortDate', $sort_type = 'desc')
 	{
-		$this->db->order_by($sort, $sort_type);
-		$this->db->order_by('sortDate', 'desc');
-		$this->db->order_by('machine', 'desc');		
+		//$this->db->order_by($sort, $sort_type);
+		//$this->db->order_by('sortDate', 'desc');
+		//$this->db->order_by('machine', 'desc');		
 		$query = $this->db->get("vr_rpt_finishgood_detail");
 		
 		//echo $this->db->last_query();
