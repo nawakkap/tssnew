@@ -58,6 +58,7 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 			<th align="center" id="productname">Production Name</th>
 			<th align="center" id="detailsize">Detail Size</th>
 			<th align="center" id="trucksize">Truck Size</th>
+			<th align="center" id="machine">Machine</th>
 			<th align="center" id="inventory">Inventory</th>
 			<th align="center" id="delivery">Delivery</th>
 			<th align="center" id="backlog">Backlog</th>
@@ -88,6 +89,7 @@ html,body {font-size: 8pt;font-family:Tahoma; }
 			<td nowrap="nowrap" class="product_name" rel="<?= $item["product_display_id"] ?>" style="cursor:pointer;"><?= $item["product_name_th"] ?></td>
 			<td nowrap="nowrap"><?= $item["detail_size"] ?></td>
 			<td><?= number_format($item["truck_size"], 0) ?></td>
+			<td nowrap="nowrap"><?= $item["machine"] ?></td>
 			<td><?= check_negative($item["delivery"] + $item["backlog"]) ?></td>
 			<td><?= check_negative($item["delivery"]) ?></td>
 			<td><?= check_negative($item["backlog"]) ?></td>
