@@ -213,6 +213,7 @@ class Report extends CI_Controller {
 		$prodcode_column = FALSE;
 		$wsendqty_column = FALSE;
 		$totalqty_column = FALSE;
+		$qty_column = FALSE;
 		$numCols = $excel->colcount();
 		for($i = 1; $i <= $numCols ; $i++)
 		{
@@ -235,11 +236,18 @@ class Report extends CI_Controller {
 				$totalqty_column = $i;
 			}
 			
+			// Find column name [totalqty]
+			if ($excel->val(1, $i) == "qty")
+			{
+				$qty_column = $i;
+			}
+			
 		}
 		
 		
 		$wsendqty_map = array();
 		$totalqty_map = array();
+		$qty_map = array();
 		
 		$username = $this->session->userdata("USERNAME");
 		user_log_message("INFO",  $username . " get all data in excel");
@@ -264,6 +272,12 @@ class Report extends CI_Controller {
 					{
 						$totalqty = $excel->val($i, $totalqty_column);
 						$totalqty_map[$prodcode] = $totalqty;
+					}
+					
+					if ($qty_column !== FALSE)
+					{
+						$qty = $excel->val($i, $qty_column);
+						$qty_map[$prodcode] = $qty;
 					}
 				}
 			}
@@ -445,7 +459,13 @@ class Report extends CI_Controller {
 				$backlog = $totalqty_map[$product_display_id];
 			}
 			
-			$this->report_model->insert("ADD", $product_display_id, $delivery, $backlog);
+			$inventory = 0;
+			if (isset($qty_map[$product_display_id]))
+			{
+				$inventory = $qty_map[$product_display_id];
+			}
+			
+			$this->report_model->insert("ADD", $product_display_id, $delivery, $backlog, $inventory);
 		}
 		
 		$sono_include = array();

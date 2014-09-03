@@ -9,11 +9,12 @@ class Report_model extends CI_Model {
 		$this->load->database();
 	}
 	
-	function insert($mode, $product_display_id, $delivery, $backlog)
+	function insert($mode, $product_display_id, $delivery, $backlog, $inventory)
 	{
 		$data = array(
 			"delivery" => $delivery,
-			"backlog" => $backlog
+			"backlog" => $backlog,
+			"inventory" => $inventory
 		);
 		
 		$result = TRUE;
