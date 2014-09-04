@@ -9,8 +9,9 @@
 		<tr class="ui-widget-header">
 			<th align="center">&nbsp;</th>
 			<th align="center">Coils Coming</th>
-			<th align="center">Coil Stock Metallic</th>
+			<th align="center">Coils Coming Metallic</th>
 			<th align="center">Coil Stock</th>
+			<th align="center">Coil Stock Metallic</th>
 			<th align="center">Coils needed</th>
 			<th align="center">Coil Balance</th>
 			<th align="center">Inventory</th>
@@ -27,6 +28,7 @@
 	<tbody>
 		<? 
 		$i = 0;
+		$total_weight_metallic = 0;
 		$total_weight = 0;
 		$total_coil_weight_metallic = 0;
 		$total_coil_weight = 0;
@@ -56,7 +58,7 @@
 			
 			$grand_total = $coil_balance + $report[$i]["coil_needed"] + $report[$i]["inventory"] - $report[$i]["delivering"] + $report[$i]["in_production"]; 
 		
-			
+			$total_weight_metallic += $report[$i]["coil_coming_metallic"];
 			$total_weight += $report[$i]["coil_coming"];
 			$total_coil_weight_metallic += $coil_weight_metallic[$report[$i]["thickness_rep"]];
 			$total_coil_weight += $coil_weight[$report[$i]["thickness_rep"]];
@@ -76,8 +78,9 @@
 		<tr class="<?= ($i % 2) ? "odd" : "even" ?>">
 			<td><?= number_format($report[$i]["thickness_rep"], 2) ?></th>
 			<td><?= number_format($report[$i]["coil_coming"], 0) ?></th>
-			<td><?= number_format($coil_weight_metallic[$report[$i]["thickness_rep"]], 0) ?></th>
+			<td><?= number_format($report[$i]["coil_coming_metallic"], 0) ?></th>
 			<td><?= number_format($coil_weight[$report[$i]["thickness_rep"]], 0) ?></th>
+			<td><?= number_format($coil_weight_metallic[$report[$i]["thickness_rep"]], 0) ?></th>
 			<td><?= number_format($report[$i]["coil_needed"], 0) ?></th>
 			<td><?= number_format($coil_balance, 0) ?></th>
 			<td><?= number_format($report[$i]["inventory"], 0) ?></th>
@@ -94,8 +97,9 @@
 		<tr class="ui-state-highlight odd" style="font-weight: bold">
 			<td>Total</th>
 			<td><?= number_format($total_weight, 0) ?></th>
-			<td><?= number_format($total_coil_weight_metallic, 0) ?></th>
+			<td><?= number_format($total_weight_metallic, 0) ?></th>
 			<td><?= number_format($total_coil_weight, 0) ?></th>
+			<td><?= number_format($total_coil_weight_metallic, 0) ?></th>
 			<td><?= number_format($total_coil_need, 0) ?></th>
 			<td><?= number_format($total_coil_balance, 0) ?></th>
 			<td><?= number_format($total_inventory, 0) ?></th>
