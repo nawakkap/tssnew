@@ -1108,9 +1108,17 @@ class Report extends CI_Controller {
 			}
 			$coil_weight[$thickness] = $sum_coil_weight;
 			
+			$sum_coil_weight_metallic = $this->coil_model->get_sum_coil_weight_by_thickness_metallic((double)$thickness);
+			if ($sum_coil_weight_metallic === FALSE || empty($sum_coil_weight_metallic))
+			{
+				$sum_coil_weight_metallic = 0;
+			}
+			$coil_weight_metallic[$thickness] = $sum_coil_weight_metallic;
+			
 		}
 		$data["weight"] = $weight;
 		$data["coil_weight"] = $coil_weight;
+		$data["coil_weight_metallic"] = $coil_weight_metallic;
 	
 	
 		$selected = "Overall report";

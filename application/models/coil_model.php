@@ -212,6 +212,22 @@ class Coil_model extends CI_Model {
 		return 0;
 	}
 	
+	function get_sum_coil_weight_by_thickness_metallic($thickness)
+	{
+		$this->db->where("thickness", $thickness);
+		$this->db->where("coil_status", "1");
+		$this->db->like('po_id', 'A');
+		$this->db->select_sum("weight");
+		$query = $this->db->get("prd_coil_information");
+		
+		if ($query->num_rows() > 0)
+		{
+			$result = $query->row_array();
+			return $result["weight"];
+		}
+		return 0;
+	}
+	
 	function insert(	$mode, $coil_id, $coil_lot_no, $po_id, $thickness, $width, $weight, $coil_received_date, 
 							$coil_status, $coil_price,$record_change_by, $record_change_date) 
 	{
